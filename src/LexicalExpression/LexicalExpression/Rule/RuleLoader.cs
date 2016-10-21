@@ -15,23 +15,29 @@ namespace LexicalExpression
 		int lexval;        // 解析规则时，数字串对应的数值
 		int chpos;          // 解析规则时，当前的字符
 
-		// 构造函数
+		/// <summary>
+		///		
+		/// </summary>
+		public RuleLoader()
+		{
+		}
+
+		/// <summary>
+		///		
+		/// </summary>
+		/// <param name="path">模型文件路径</param>
 		public RuleLoader(string path)
 		{
 			this.ruleFilePath = path;
 		}
 
-		public RuleLoader()
-		{
+		#region 规则解析函数
 
-		}
-
-		//=======================================
-		// 规则解析函数
-		//
-		//=======================================
-
-		#region 解析并加载一条规则到内存中    loadOneRule(string ruleStr)
+		/// <summary>
+		///		解析并加载一条规则到内存中
+		/// </summary>
+		/// <param name="ruleStr"></param>
+		/// <returns></returns>
 		public Rule loadOneRule(string ruleStr)
 		{
 			try
@@ -59,12 +65,11 @@ namespace LexicalExpression
 				throw new_e;
 			}
 		}
-		#endregion
 
-		#region 解析并加载规则左部到内存中  loadRuleLeft()
-
-		// 解析并加载规则左部到内存中
-		//===================================================================
+		/// <summary>
+		///		解析并加载规则左部到内存中
+		/// </summary>
+		/// <returns></returns>
 		RuleLeft loadRuleLeft()
 		{
 			try
@@ -99,12 +104,11 @@ namespace LexicalExpression
 				throw e;
 			}
 		}
-		#endregion
 
-		#region 解析并加载规则左部的一个规则项（元素项）     loadRuleItem()
-		// 解析并加载规则左部的一个规则项（元素项）
-		//===================================================================
-		//
+		/// <summary>
+		///		解析并加载规则左部的一个规则项（元素项）
+		/// </summary>
+		/// <returns></returns>
 		RuleItem loadRuleItem()
 		{
 			RuleItem item = null;
@@ -139,9 +143,11 @@ namespace LexicalExpression
 				throw e;
 			}
 		}
-		#endregion
 
-		#region 解析并加载基本项 loadBasicItem()
+		/// <summary>
+		///		解析并加载基本项
+		/// </summary>
+		/// <returns></returns>
 		BasicRuleItem loadBasicItem()
 		{
 			WordGroup wordGroup = null;
@@ -163,12 +169,11 @@ namespace LexicalExpression
 			BasicRuleItem basicItem = new BasicRuleItem(wordGroup, labelGroup);
 			return basicItem;
 		}
-		#endregion
 
-		#region 解析并加载越过项   loadSkipItem()
-		// 解析并加载越过项
-		//===================================================================
-		//
+		/// <summary>
+		///		解析并加载越过项
+		/// </summary>
+		/// <returns></returns>
 		SkipRuleItem loadSkipItem()
 		{
 			int low, high;
@@ -225,9 +230,11 @@ namespace LexicalExpression
 			return skipItem;
 
 		}
-		#endregion
 
-		#region  解析并加载重复可选项     loadOptionItem()
+		/// <summary>
+		///		解析并加载重复可选项
+		/// </summary>
+		/// <returns></returns>
 		OptionalRuleItem loadOptionItem()
 		{
 			BasicRuleItem basicItem = null;
@@ -254,14 +261,13 @@ namespace LexicalExpression
 			return optionItem;
 		}
 		#endregion
-		//===================================================================//
-		//                                                                                         |                                                                       //
-		//                                                                      --------组合词部分--------                                                    //
-		//                                                                                         |                                                                       //
-		//===================================================================//
 
-		#region 解析并加载-------组合词      loadWordGroup()
+		#region 组合词部分
 
+		/// <summary>
+		///		解析并加载-------组合词
+		/// </summary>
+		/// <returns></returns>
 		WordGroup loadWordGroup()
 		{
 			WordGroup wg = new WordGroup(true, null);
@@ -275,10 +281,11 @@ namespace LexicalExpression
 
 			return wg;
 		}
-		#endregion
 
-		#region 解析并加载------词表达式   loadWordExpression()
-
+		/// <summary>
+		///		解析并加载------词表达式
+		/// </summary>
+		/// <returns></returns>
 		WordExpression loadWordExpression()
 		{
 			List<WordItem> list = new List<WordItem>();  // 组成词表达式的词项列表
@@ -297,9 +304,11 @@ namespace LexicalExpression
 
 			return wordExpr;
 		}
-		#endregion
 
-		#region 解析并加载------词项  loadWordItem()
+		/// <summary>
+		///		解析并加载------词项
+		/// </summary>
+		/// <returns></returns>
 		WordItem loadWordItem()
 		{
 			WordItem wordItem;
@@ -332,10 +341,11 @@ namespace LexicalExpression
 			}
 			return wordItem;
 		}
-		#endregion
 
-		#region 解析并加载------词项  loadWordAtom()
-
+		/// <summary>
+		///		解析并加载------词项
+		/// </summary>
+		/// <returns></returns>
 		WordAtom loadWordAtom()
 		{
 			WordAtom wordAtom;
@@ -350,16 +360,15 @@ namespace LexicalExpression
 
 			return wordAtom;
 		}
+
 		#endregion
 
-		//===================================================================//
-		//                                                                                         |                                                                       //
-		//                                                                    --------组合标记部分--------                                                    //
-		//                                                                                         |                                                                       //
-		//===================================================================//
+		#region 组合标记部分
 
-		#region 解析并加载------组合标记   loadLabelGroup( )
-
+		/// <summary>
+		///		解析并加载------组合标记
+		/// </summary>
+		/// <returns></returns>
 		LabelGroup loadLabelGroup()
 		{
 			LabelGroup labelGroup = new LabelGroup(true, null);
@@ -373,10 +382,11 @@ namespace LexicalExpression
 
 			return labelGroup;
 		}
-		#endregion
 
-		#region 解析并加载------标记表达式 loadLabelExpression()
-
+		/// <summary>
+		///		解析并加载------标记表达式
+		/// </summary>
+		/// <returns></returns>
 		LabelExpression loadLabelExpression()
 		{
 			List<LabelItem> list = new List<LabelItem>();
@@ -393,10 +403,11 @@ namespace LexicalExpression
 			LabelExpression labelExpression = new LabelExpression(list);
 			return labelExpression;
 		}
-		#endregion
 
-		#region 解析并加载------标记项 loadLabelItem( )
-
+		/// <summary>
+		///		解析并加载------标记项
+		/// </summary>
+		/// <returns></returns>
 		LabelItem loadLabelItem()
 		{
 			List<LabelAtom> list = new List<LabelAtom>();
@@ -415,10 +426,10 @@ namespace LexicalExpression
 			return labelItem;
 		}
 
-		#endregion
-
-		#region 解析并加载------标记因子   loadLabelAtom()
-
+		/// <summary>
+		///		解析并加载------标记因子
+		/// </summary>
+		/// <returns></returns>
 		LabelAtom loadLabelAtom()
 		{
 			LabelAtom labelAtom;
@@ -464,14 +475,12 @@ namespace LexicalExpression
 
 		#endregion
 
+		#region 规则右部
 
-		//===================================================================//
-		//                                                                                         |                                                                       //
-		//                                                                          ------规则右部--------                                                      //
-		//                                                                                         |                                                                       //
-		//===================================================================//
-
-		#region 解析并加载规则右部       loadRuleRight()
+		/// <summary>
+		///		解析并加载规则右部 
+		/// </summary>
+		/// <returns></returns>
 		RuleRight loadRuleRight()
 		{
 			if (this.token == Constants.End)
@@ -502,9 +511,11 @@ namespace LexicalExpression
 				}
 			}
 		}
-		#endregion
 
-		#region 加载规则右部项  loadRightRuleItem()
+		/// <summary>
+		///		加载规则右部项
+		/// </summary>
+		/// <returns></returns>
 		public RightRuleItem loadRightRuleItem()
 		{
 			RightRuleItem rightRuleItem = new RightRuleItem();
@@ -606,7 +617,9 @@ namespace LexicalExpression
 		}
 		#endregion
 
-		#region 获取下一个元素 getToken()
+		/// <summary>
+		///		获取下一个元素 
+		/// </summary>
 		void getToken()
 		{
 			int next;
@@ -755,7 +768,5 @@ namespace LexicalExpression
 				return;
 			}
 		}
-		#endregion
-
 	}
 }
