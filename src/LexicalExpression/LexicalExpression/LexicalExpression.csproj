@@ -47,6 +47,7 @@
     <Compile Include="LabelGroup\LabelGroup.cs" />
     <Compile Include="LabelGroup\LabelItem.cs" />
     <Compile Include="Lexex.cs" />
+    <Compile Include="LexicalExpressionMatcher.cs" />
     <Compile Include="LexSentence.cs" />
     <Compile Include="LexWord.cs" />
     <Compile Include="Match.cs" />

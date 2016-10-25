@@ -8,28 +8,11 @@ namespace LexicalExpression
 	/// </summary>
 	internal class RuleLoader
 	{
-		string ruleFilePath;
-		string curRule;
-		string lex;         // 解析规则时的每一个单词
-		int token;         // 解析规则时，单词对应的常量值
-		int lexval;        // 解析规则时，数字串对应的数值
-		int chpos;          // 解析规则时，当前的字符
-
-		/// <summary>
-		///		
-		/// </summary>
-		public RuleLoader()
-		{
-		}
-
-		/// <summary>
-		///		
-		/// </summary>
-		/// <param name="path">模型文件路径</param>
-		public RuleLoader(string path)
-		{
-			this.ruleFilePath = path;
-		}
+		private int _token;         // 解析规则时，单词对应的常量值
+		private int _lexval;        // 解析规则时，数字串对应的数值
+		private int _chpos;          // 解析规则时，当前的字符
+		private string _lex;         // 解析规则时的每一个单词
+		private string _curRule;
 
 		#region 规则解析函数
 
@@ -38,24 +21,24 @@ namespace LexicalExpression
 		/// </summary>
 		/// <param name="ruleStr"></param>
 		/// <returns></returns>
-		public Rule loadOneRule(string ruleStr)
+		public Rule LoadOneRule(string ruleStr)
 		{
 			try
 			{
-				this.curRule = ruleStr + "\n\n";         // 加上两个换行符，为了在解析字符串时不越界
-				this.chpos = 0;                          // 指向规则的开始
-				this.getToken();                         // 读第一个token
+				this._curRule = ruleStr + "\n\n";         // 加上两个换行符，为了在解析字符串时不越界
+				this._chpos = 0;                          // 指向规则的开始
+				this.GetToken();                         // 读第一个token
 
 				Rule ParserRule = new Rule();
 
-				ParserRule.RuleLeft = this.loadRuleLeft();
-				if (this.token != Constants.Equal) // 规则左部后面应该是 '='
+				ParserRule.RuleLeft = this.LoadRuleLeft();
+				if (this._token != Constants.Equal) // 规则左部后面应该是 '='
 				{
 					return null;
 				}
-				this.getToken();                         // 读下一个token
+				this.GetToken();                         // 读下一个token
 
-				ParserRule.RuleRight = this.loadRuleRight();
+				ParserRule.RuleRight = this.LoadRuleRight();
 
 				return ParserRule;
 			}
@@ -70,24 +53,24 @@ namespace LexicalExpression
 		///		解析并加载规则左部到内存中
 		/// </summary>
 		/// <returns></returns>
-		RuleLeft loadRuleLeft()
+		private RuleLeft LoadRuleLeft()
 		{
 			try
 			{
 				RuleLeft ruleLeft = new RuleLeft();
 				RuleItem item;
 				int i = 0;
-				item = this.loadRuleItem();         // 读取一个规则元素项
+				item = this.LoadRuleItem();         // 读取一个规则元素项
 				item.id = i;
 				i++;
 				ruleLeft.ruleItemList.Add(item);
 
 				while (true)
 				{
-					if (this.token == Constants.Plus)
+					if (this._token == Constants.Plus)
 					{
-						this.getToken();         // 读取 '+' 后面的下一个符号
-						item = this.loadRuleItem();     // 读取下一个规则元素项
+						this.GetToken();         // 读取 '+' 后面的下一个符号
+						item = this.LoadRuleItem();     // 读取下一个规则元素项
 						item.id = i;
 						i++;
 						ruleLeft.ruleItemList.Add(item);
@@ -109,30 +92,30 @@ namespace LexicalExpression
 		///		解析并加载规则左部的一个规则项（元素项）
 		/// </summary>
 		/// <returns></returns>
-		RuleItem loadRuleItem()
+		private RuleItem LoadRuleItem()
 		{
 			RuleItem item = null;
 			IRuleItem ruleItem;
 			try
 			{
-				if (this.token == Constants.Hashtag)
+				if (this._token == Constants.Hashtag)
 				{
 					// 加载 越过项 #m[:n] '['<基本项>']'
-					ruleItem = this.loadSkipItem();
+					ruleItem = this.LoadSkipItem();
 					item = new RuleItem(Constants.SkipRuleItem,ruleItem);
 					return item;
 				}
-				else if (this.token == Constants.Lbrace)
+				else if (this._token == Constants.Lbrace)
 				{
 					// 加载 重复可选项 '{'<基本项>'}'
-					ruleItem = this.loadOptionItem();
+					ruleItem = this.LoadOptionItem();
 					item = new RuleItem(Constants.OptionRuleItem, ruleItem);
 					return item;
 				}
 				else
 				{
 					// 加载<基本项>
-					ruleItem = this.loadBasicItem();
+					ruleItem = this.LoadBasicItem();
 					item = new RuleItem(Constants.BasicRuleItem, ruleItem);
 					return item;
 				}
@@ -148,23 +131,23 @@ namespace LexicalExpression
 		///		解析并加载基本项
 		/// </summary>
 		/// <returns></returns>
-		BasicRuleItem loadBasicItem()
+		private BasicRuleItem LoadBasicItem()
 		{
 			WordGroup wordGroup = null;
 			LabelGroup labelGroup = null;
 
 			// 读取组合词并建立组合词的节点
-			wordGroup = this.loadWordGroup();
+			wordGroup = this.LoadWordGroup();
 
-			if (this.token != Constants.Slash)
+			if (this._token != Constants.Slash)
 			{
 				// showError("单词和标记之间缺少'/'" + Environment.NewLine + lex");
 				return null;
 			}
-			this.getToken();             // 跳过 '/'
+			this.GetToken();             // 跳过 '/'
 
 			// 读取组合词并建立组合词的节点
-			labelGroup = this.loadLabelGroup();
+			labelGroup = this.LoadLabelGroup();
 
 			BasicRuleItem basicItem = new BasicRuleItem(wordGroup, labelGroup);
 			return basicItem;
@@ -174,14 +157,14 @@ namespace LexicalExpression
 		///		解析并加载越过项
 		/// </summary>
 		/// <returns></returns>
-		SkipRuleItem loadSkipItem()
+		private SkipRuleItem LoadSkipItem()
 		{
 			int low, high;
 			BasicRuleItem basicItem = null;
 
 			// 越过项 #m[:n] '['<基本项>']'
-			this.getToken();         // 读取 '#' 后面的第一个数字串
-			if (this.token != Constants.Number)
+			this.GetToken();         // 读取 '#' 后面的第一个数字串
+			if (this._token != Constants.Number)
 			{
 				low = 0;
 				high = 65000;
@@ -189,40 +172,40 @@ namespace LexicalExpression
 			else
 			{
 				// 当读第一个数字时，首先假定high的值就是low的值
-				low = this.lexval;
+				low = this._lexval;
 				high = 65000;
 
-				this.getToken();         // 读取第一个数字串的符号
-				if (this.token == Constants.Colon)
+				this.GetToken();         // 读取第一个数字串的符号
+				if (this._token == Constants.Colon)
 				{
-					this.getToken();         // 读取第二个数字串
-					if (this.token != Constants.Number)
+					this.GetToken();         // 读取第二个数字串
+					if (this._token != Constants.Number)
 					{
 						Console.WriteLine("越过项 '#n', 冒号后面缺少数字");
 						return null;
 					}
 
 					// 读第二个数字后，赋给high值
-					high = this.lexval;
-					this.getToken();         // 读取第二个数字串后面的符号
+					high = this._lexval;
+					this.GetToken();         // 读取第二个数字串后面的符号
 				}
 			}
-			if (this.token == Constants.Lbracket)
+			if (this._token == Constants.Lbracket)
 			{
 				// 越过项有限制条件（在方括号里面）
-				this.getToken();     // 读取第一个方括号后面的符号
+				this.GetToken();     // 读取第一个方括号后面的符号
 
 				// 读取方括号中的限制条件，是一个基本项
-				basicItem = this.loadBasicItem();
+				basicItem = this.LoadBasicItem();
 
 				// 读取完方括号中的基本项后，下一个符号应该是 ']'，否则就出错
-				if (this.token != Constants.Rbracket)
+				if (this._token != Constants.Rbracket)
 				{
 					Console.WriteLine("越过项 '#n:['，缺右方括号");
 					return null;
 				}
 				else
-					this.getToken();     // 读完越过项
+					this.GetToken();     // 读完越过项
 			}
 
 			// 创建越过项
@@ -235,25 +218,25 @@ namespace LexicalExpression
 		///		解析并加载重复可选项
 		/// </summary>
 		/// <returns></returns>
-		OptionalRuleItem loadOptionItem()
+		private OptionalRuleItem LoadOptionItem()
 		{
 			BasicRuleItem basicItem = null;
 
 			// 重复可选项的标识是 '{'
-			this.getToken();             // 跳过 '{'
+			this.GetToken();             // 跳过 '{'
 
 			// 读取大括号中的限制条件，是一个基本项
-			basicItem = this.loadBasicItem();
+			basicItem = this.LoadBasicItem();
 
 			// 读取完大括号中的基本项后，下一个符号应该是 '}'，否则就出错
-			if (this.token != Constants.Rbrace)
+			if (this._token != Constants.Rbrace)
 			{
 				Console.WriteLine("重复可选项，缺右方括号");
 				return null;
 			}
 			else
 			{
-				this.getToken();     // 跳过 '}', 读完重复可选项
+				this.GetToken();     // 跳过 '}', 读完重复可选项
 			}
 
 			// 创建重复可选项
@@ -268,16 +251,16 @@ namespace LexicalExpression
 		///		解析并加载-------组合词
 		/// </summary>
 		/// <returns></returns>
-		WordGroup loadWordGroup()
+		private WordGroup LoadWordGroup()
 		{
 			WordGroup wg = new WordGroup(true, null);
-			if (this.token != Constants.Star)
+			if (this._token != Constants.Star)
 			{
 				wg.IsStar = false;
-				wg.WordExpr = this.loadWordExpression();
+				wg.WordExpr = this.LoadWordExpression();
 			}
 			else
-				this.getToken();
+				this.GetToken();
 
 			return wg;
 		}
@@ -286,17 +269,17 @@ namespace LexicalExpression
 		///		解析并加载------词表达式
 		/// </summary>
 		/// <returns></returns>
-		WordExpression loadWordExpression()
+		private WordExpression LoadWordExpression()
 		{
 			List<WordItem> list = new List<WordItem>();  // 组成词表达式的词项列表
 
-			WordItem wordItem = this.loadWordItem();
+			WordItem wordItem = this.LoadWordItem();
 			list.Add(wordItem);
 
-			while (this.token == Constants.Or)
+			while (this._token == Constants.Or)
 			{
-				this.getToken();
-				wordItem = this.loadWordItem();
+				this.GetToken();
+				wordItem = this.LoadWordItem();
 				list.Add(wordItem);
 			}
 
@@ -309,34 +292,34 @@ namespace LexicalExpression
 		///		解析并加载------词项
 		/// </summary>
 		/// <returns></returns>
-		WordItem loadWordItem()
+		private WordItem LoadWordItem()
 		{
 			WordItem wordItem;
-			if (this.token == Constants.Not)  // 检查是否是非标记
+			if (this._token == Constants.Not)  // 检查是否是非标记
 			{
-				this.getToken();
-				WordExpression wordExpression = this.loadWordExpression();
+				this.GetToken();
+				WordExpression wordExpression = this.LoadWordExpression();
 				wordItem = new WordItem(Constants.IsWordExpr, true, null, wordExpression);
 			}
-			else if (this.token == Constants.Lparen)  // 检查是否是左括号
+			else if (this._token == Constants.Lparen)  // 检查是否是左括号
 			{
-				this.getToken();
-				WordExpression wordExpression = this.loadWordExpression();
+				this.GetToken();
+				WordExpression wordExpression = this.LoadWordExpression();
 
-				if (this.token != Constants.Rparen)  // 检查括号是否匹配
+				if (this._token != Constants.Rparen)  // 检查括号是否匹配
 				{
 					//showError("表达式括号不匹配");
 					return null;
 				}
 				else
 				{
-					this.getToken();
+					this.GetToken();
 					wordItem = new WordItem(Constants.IsWordExpr, false, null, wordExpression);
 				}
 			}
 			else
 			{
-				WordAtom wordAtom = this.loadWordAtom();
+				WordAtom wordAtom = this.LoadWordAtom();
 				wordItem = new WordItem(Constants.IsWordAtom, false, wordAtom, null);
 			}
 			return wordItem;
@@ -346,15 +329,15 @@ namespace LexicalExpression
 		///		解析并加载------词项
 		/// </summary>
 		/// <returns></returns>
-		WordAtom loadWordAtom()
+		private WordAtom LoadWordAtom()
 		{
 			WordAtom wordAtom;
 
 			string Lex = "";
-			while (this.token == Constants.Eng || this.token == Constants.Hz || this.token == Constants.Number)
+			while (this._token == Constants.Eng || this._token == Constants.Hz || this._token == Constants.Number)
 			{
-				Lex += this.lex;
-				this.getToken();
+				Lex += this._lex;
+				this.GetToken();
 			}
 			wordAtom = new WordAtom(Lex);
 
@@ -369,16 +352,16 @@ namespace LexicalExpression
 		///		解析并加载------组合标记
 		/// </summary>
 		/// <returns></returns>
-		LabelGroup loadLabelGroup()
+		private LabelGroup LoadLabelGroup()
 		{
 			LabelGroup labelGroup = new LabelGroup(true, null);
-			if (this.token != Constants.Percent)
+			if (this._token != Constants.Percent)
 			{
 				labelGroup.IsPercent = false;
-				labelGroup.LabelExpr = this.loadLabelExpression();
+				labelGroup.LabelExpr = this.LoadLabelExpression();
 			}
 			else
-				this.getToken();
+				this.GetToken();
 
 			return labelGroup;
 		}
@@ -387,16 +370,16 @@ namespace LexicalExpression
 		///		解析并加载------标记表达式
 		/// </summary>
 		/// <returns></returns>
-		LabelExpression loadLabelExpression()
+		private LabelExpression LoadLabelExpression()
 		{
 			List<LabelItem> list = new List<LabelItem>();
-			LabelItem labelItem = this.loadLabelItem();
+			LabelItem labelItem = this.LoadLabelItem();
 			list.Add(labelItem);
 
-			while (this.token == Constants.Or)
+			while (this._token == Constants.Or)
 			{
-				this.getToken();
-				labelItem = this.loadLabelItem();
+				this.GetToken();
+				labelItem = this.LoadLabelItem();
 				list.Add(labelItem);
 			}
 
@@ -408,17 +391,17 @@ namespace LexicalExpression
 		///		解析并加载------标记项
 		/// </summary>
 		/// <returns></returns>
-		LabelItem loadLabelItem()
+		private LabelItem LoadLabelItem()
 		{
 			List<LabelAtom> list = new List<LabelAtom>();
 
-			LabelAtom labelAtom = this.loadLabelAtom();
+			LabelAtom labelAtom = this.LoadLabelAtom();
 			list.Add(labelAtom);
 
-			while (this.token == Constants.And)
+			while (this._token == Constants.And)
 			{
-				this.getToken();
-				labelAtom = this.loadLabelAtom();
+				this.GetToken();
+				labelAtom = this.LoadLabelAtom();
 				list.Add(labelAtom);
 			}
 
@@ -430,22 +413,22 @@ namespace LexicalExpression
 		///		解析并加载------标记因子
 		/// </summary>
 		/// <returns></returns>
-		LabelAtom loadLabelAtom()
+		private LabelAtom LoadLabelAtom()
 		{
 			LabelAtom labelAtom;
 
-			if (this.token == Constants.Not)
+			if (this._token == Constants.Not)
 			{
-				this.getToken();
-				LabelExpression labelExpression = this.loadLabelExpression();
+				this.GetToken();
+				LabelExpression labelExpression = this.LoadLabelExpression();
 				labelAtom = new LabelAtom(Constants.IsLabelExpr, true, null, labelExpression);
 			}
-			else if (this.token == Constants.Lparen)
+			else if (this._token == Constants.Lparen)
 			{
-				this.getToken();
-				LabelExpression labelExpression = this.loadLabelExpression();
+				this.GetToken();
+				LabelExpression labelExpression = this.LoadLabelExpression();
 
-				if (this.token != Constants.Rparen)
+				if (this._token != Constants.Rparen)
 				{
 					//showError("表达式括号不匹配！");
 					return null;
@@ -453,16 +436,16 @@ namespace LexicalExpression
 				else
 				{
 					labelAtom = new LabelAtom(Constants.IsLabelExpr, false, null, labelExpression);
-					this.getToken();
+					this.GetToken();
 				}
 			}
 			else
 			{
-				if (this.token == Constants.Eng || this.token == Constants.Number
-					||this.token==Constants.Mark||this.token==Constants.Dollar)
+				if (this._token == Constants.Eng || this._token == Constants.Number
+					||this._token==Constants.Mark||this._token==Constants.Dollar)
 				{
-					labelAtom = new LabelAtom(Constants.IsLabelStr, false, this.lex, null);
-					this.getToken();
+					labelAtom = new LabelAtom(Constants.IsLabelStr, false, this._lex, null);
+					this.GetToken();
 				}
 				else
 				{
@@ -481,9 +464,9 @@ namespace LexicalExpression
 		///		解析并加载规则右部 
 		/// </summary>
 		/// <returns></returns>
-		RuleRight loadRuleRight()
+		private RuleRight LoadRuleRight()
 		{
-			if (this.token == Constants.End)
+			if (this._token == Constants.End)
 			{
 				//showError("缺少右部项");
 				return null;
@@ -492,14 +475,14 @@ namespace LexicalExpression
 			{
 				RuleRight ruleRight = null;
 				List<RightRuleItem> rightRuleItemList = new List<RightRuleItem>();
-				if (this.token == Constants.Lbrace)
+				if (this._token == Constants.Lbrace)
 				{
-					RightRuleItem rightRuleItem = this.loadRightRuleItem();
+					RightRuleItem rightRuleItem = this.LoadRightRuleItem();
 					rightRuleItemList.Add(rightRuleItem);
-					while (this.token == Constants.Plus)
+					while (this._token == Constants.Plus)
 					{
-						this.getToken();
-						rightRuleItem = this.loadRightRuleItem();
+						this.GetToken();
+						rightRuleItem = this.LoadRightRuleItem();
 						rightRuleItemList.Add(rightRuleItem);
 					}
 					ruleRight = new RuleRight(rightRuleItemList);
@@ -516,39 +499,39 @@ namespace LexicalExpression
 		///		加载规则右部项
 		/// </summary>
 		/// <returns></returns>
-		public RightRuleItem loadRightRuleItem()
+		public RightRuleItem LoadRightRuleItem()
 		{
 			RightRuleItem rightRuleItem = new RightRuleItem();
-			if (this.token == Constants.Lbrace)
+			if (this._token == Constants.Lbrace)
 			{
 				// 读 '{'
-				this.getToken();
+				this.GetToken();
 				// 读数字串，以','分隔
-				if (this.token == Constants.Eng || this.token == Constants.Hz)
+				if (this._token == Constants.Eng || this._token == Constants.Hz)
 				{
-					rightRuleItem.name = this.lex;
-					this.getToken();
-					if (this.token == Constants.Colon)
+					rightRuleItem.name = this._lex;
+					this.GetToken();
+					if (this._token == Constants.Colon)
 					{
-						this.getToken();
+						this.GetToken();
 					}
 					else
 					{
 						return null;
 					}
-					while (this.token == Constants.Number)
+					while (this._token == Constants.Number)
 					{
-						rightRuleItem.ids.Add(Convert.ToInt32(this.lex));
-						this.getToken();
-						if (this.token == Constants.Comma)
+						rightRuleItem.ids.Add(Convert.ToInt32(this._lex));
+						this.GetToken();
+						if (this._token == Constants.Comma)
 						{
-							this.getToken();
+							this.GetToken();
 						}
 						else
 						{
-							if (this.token == Constants.Rbrace)
+							if (this._token == Constants.Rbrace)
 							{
-								this.getToken();
+								this.GetToken();
 								return rightRuleItem;
 							}
 							else
@@ -558,43 +541,43 @@ namespace LexicalExpression
 						}
 					}
 				}
-				else if(this.token==Constants.Number)
+				else if(this._token==Constants.Number)
 				{
 					rightRuleItem.nameIdList = new List<int>();
-					while (this.token == Constants.Number)
+					while (this._token == Constants.Number)
 					{
-						rightRuleItem.nameIdList.Add(Convert.ToInt32(this.lex));
-						this.getToken();
-						if(this.token==Constants.Comma)
+						rightRuleItem.nameIdList.Add(Convert.ToInt32(this._lex));
+						this.GetToken();
+						if(this._token==Constants.Comma)
 						{
-							this.getToken();
+							this.GetToken();
 						}
 						else
 						{
 							break;
 						}
 					}
-					if (this.token == Constants.Colon)
+					if (this._token == Constants.Colon)
 					{
-						this.getToken();
+						this.GetToken();
 					}
 					else
 					{
 						return null;
 					}
-					while (this.token == Constants.Number)
+					while (this._token == Constants.Number)
 					{
-						rightRuleItem.ids.Add(Convert.ToInt32(this.lex));
-						this.getToken();
-						if (this.token == Constants.Comma)
+						rightRuleItem.ids.Add(Convert.ToInt32(this._lex));
+						this.GetToken();
+						if (this._token == Constants.Comma)
 						{
-							this.getToken();
+							this.GetToken();
 						}
 						else
 						{
-							if (this.token == Constants.Rbrace)
+							if (this._token == Constants.Rbrace)
 							{
-								this.getToken();
+								this.GetToken();
 								return rightRuleItem;
 							}
 							else
@@ -620,151 +603,151 @@ namespace LexicalExpression
 		/// <summary>
 		///		获取下一个元素 
 		/// </summary>
-		void getToken()
+		private void GetToken()
 		{
 			int next;
 
-			while (this.curRule[this.chpos] == ' ' || this.curRule[this.chpos] == '\t')
+			while (this._curRule[this._chpos] == ' ' || this._curRule[this._chpos] == '\t')
 			{
-				this.chpos++;
+				this._chpos++;
 			}
-			if (this.curRule[this.chpos] == '\n')
+			if (this._curRule[this._chpos] == '\n')
 			{
 				// 规则结束
-				this.token = Constants.End;
+				this._token = Constants.End;
 				return;
 			}
-			else if (this.curRule[this.chpos] > 256)
+			else if (this._curRule[this._chpos] > 256)
 			{
 				// 汉字串
-				this.token = Constants.Hz;
-				next = this.chpos + 1;
-				while (this.curRule[next] > 256)
+				this._token = Constants.Hz;
+				next = this._chpos + 1;
+				while (this._curRule[next] > 256)
 				{
 					next++;
 				}
-				this.lex = this.curRule.Substring(this.chpos, next - this.chpos);
-				this.chpos = next;
+				this._lex = this._curRule.Substring(this._chpos, next - this._chpos);
+				this._chpos = next;
 				return;
 			}
-			else if (this.curRule[this.chpos] == '"')
+			else if (this._curRule[this._chpos] == '"')
 			{
-				this.token = Constants.Eng;
-				next = this.chpos + 1;
-				while (this.curRule[next] != '"' && next < this.curRule.Length)
+				this._token = Constants.Eng;
+				next = this._chpos + 1;
+				while (this._curRule[next] != '"' && next < this._curRule.Length)
 				{
 					next++;
 				}
-				this.lex = this.curRule.Substring(this.chpos + 1, next - this.chpos - 1);
-				this.chpos = next + 1;
+				this._lex = this._curRule.Substring(this._chpos + 1, next - this._chpos - 1);
+				this._chpos = next + 1;
 				return;
 			}
 				//@@
-			else if (Char.IsLetter(this.curRule, this.chpos))
+			else if (Char.IsLetter(this._curRule, this._chpos))
 			{
 				// 英文字母串
-				this.token = Constants.Eng;
-				next = this.chpos + 1;
-				while (Char.IsLetter(this.curRule, next))
+				this._token = Constants.Eng;
+				next = this._chpos + 1;
+				while (Char.IsLetter(this._curRule, next))
 					next++;
-				this.lex = this.curRule.Substring(this.chpos, next - this.chpos);
+				this._lex = this._curRule.Substring(this._chpos, next - this._chpos);
 
-				this.chpos = next;
+				this._chpos = next;
 				return;
 			}
-			else if (Char.IsDigit(this.curRule, this.chpos))
+			else if (Char.IsDigit(this._curRule, this._chpos))
 			{
 				// 数字串
-				this.token = Constants.Number;
-				next = this.chpos + 1;
-				while (Char.IsDigit(this.curRule, next))
+				this._token = Constants.Number;
+				next = this._chpos + 1;
+				while (Char.IsDigit(this._curRule, next))
 				{
 					next++;
 				}
 
 				// 得到数字串
-				this.lex = this.curRule.Substring(this.chpos, next - this.chpos);
+				this._lex = this._curRule.Substring(this._chpos, next - this._chpos);
 
 				// 得到数字串对应的值
-				this.lexval = Int32.Parse(this.lex);
+				this._lexval = Int32.Parse(this._lex);
 
-				this.chpos = next;
+				this._chpos = next;
 				return;
 			}
-			else if (this.curRule[this.chpos] == '^')
+			else if (this._curRule[this._chpos] == '^')
 			{
-				this.token = Constants.Mark;
-				this.lex = "^";
-				this.chpos++;
+				this._token = Constants.Mark;
+				this._lex = "^";
+				this._chpos++;
 				return;
 			}
-			else if (this.curRule[this.chpos] == '$')
+			else if (this._curRule[this._chpos] == '$')
 			{
-				this.token = Constants.Dollar;
-				this.lex = "$";
-				this.chpos++;
+				this._token = Constants.Dollar;
+				this._lex = "$";
+				this._chpos++;
 				return;
 			}
 				//@@
 			else
 			{
-				if (this.curRule[this.chpos] == '#')
+				if (this._curRule[this._chpos] == '#')
 				{
-					if (this.curRule[this.chpos + 1] == 'L')
+					if (this._curRule[this._chpos + 1] == 'L')
 					{
-						this.lex = "#L";
-						this.token = Constants.Lhash;
-						this.chpos += 2;
+						this._lex = "#L";
+						this._token = Constants.Lhash;
+						this._chpos += 2;
 						return;
 
 					}
-					else if (this.curRule[this.chpos + 1] == 'R')
+					else if (this._curRule[this._chpos + 1] == 'R')
 					{
-						this.lex = "#R";
-						this.token = Constants.Rhash;
-						this.chpos += 2;
+						this._lex = "#R";
+						this._token = Constants.Rhash;
+						this._chpos += 2;
 						return;
 					}
 					else
 					{
-						this.lex = "#";
-						this.token = Constants.Hashtag;
-						this.chpos++;
+						this._lex = "#";
+						this._token = Constants.Hashtag;
+						this._chpos++;
 						return;
 					}
 				}
 
 				// 取单个字符为单词
-				this.lex = this.curRule.Substring(this.chpos, 1);
+				this._lex = this._curRule.Substring(this._chpos, 1);
 
-				switch (this.curRule[this.chpos])
+				switch (this._curRule[this._chpos])
 				{
-					case '*': this.token = Constants.Star; break;
-					case '%': this.token = Constants.Percent; break;
-					case '/': this.token = Constants.Slash; break;
-					case '=': this.token = Constants.Equal; break;
-					case '+': this.token = Constants.Plus; break;
-					case '|': this.token = Constants.Or; break;
-					case '&': this.token = Constants.And; break;
-					case '!': this.token = Constants.Not; break;
-					case '(': this.token = Constants.Lparen; break;
-					case ')': this.token = Constants.Rparen; break;
-					case '[': this.token = Constants.Lbracket; break;
-					case ']': this.token = Constants.Rbracket; break;
-					case '{': this.token = Constants.Lbrace; break;
-					case '}': this.token = Constants.Rbrace; break;
-					case ':': this.token = Constants.Colon; break;
-					case '@': this.token = Constants.Address; break;
-					case '-': this.token = Constants.Minus; break;
-					case ',': this.token = Constants.Comma; break;
-					case ';': this.token = Constants.Eng; break;
-					case ' ': this.token = Constants.Space; break;
-					case '^': this.token = Constants.Mark; break;
-					case '$': this.token = Constants.Dollar; break;
-					default: this.token = Constants.Error; break;
+					case '*': this._token = Constants.Star; break;
+					case '%': this._token = Constants.Percent; break;
+					case '/': this._token = Constants.Slash; break;
+					case '=': this._token = Constants.Equal; break;
+					case '+': this._token = Constants.Plus; break;
+					case '|': this._token = Constants.Or; break;
+					case '&': this._token = Constants.And; break;
+					case '!': this._token = Constants.Not; break;
+					case '(': this._token = Constants.Lparen; break;
+					case ')': this._token = Constants.Rparen; break;
+					case '[': this._token = Constants.Lbracket; break;
+					case ']': this._token = Constants.Rbracket; break;
+					case '{': this._token = Constants.Lbrace; break;
+					case '}': this._token = Constants.Rbrace; break;
+					case ':': this._token = Constants.Colon; break;
+					case '@': this._token = Constants.Address; break;
+					case '-': this._token = Constants.Minus; break;
+					case ',': this._token = Constants.Comma; break;
+					case ';': this._token = Constants.Eng; break;
+					case ' ': this._token = Constants.Space; break;
+					case '^': this._token = Constants.Mark; break;
+					case '$': this._token = Constants.Dollar; break;
+					default: this._token = Constants.Error; break;
 				}
 
-				this.chpos++;
+				this._chpos++;
 				return;
 			}
 		}
