@@ -14,19 +14,9 @@ namespace LexicalExpression
 	{
 		private List<Rule> _rules;
 
-		public Lexex()
-		{
-			this._rules = new List<Rule>();
-		}
-
 		public Lexex(string ruleFileName)
 		{
 			this.LoadRules(ruleFileName);
-		}
-
-		public void AddRule(Rule rule)
-		{
-			this._rules.Add(rule);
 		}
 
 		private void LoadRules(string ruleFileName)
@@ -39,7 +29,7 @@ namespace LexicalExpression
 			}
 
 			IEnumerable<string> ruleStrs = File.ReadLines(fileName, Encoding.UTF8);
-			RuleLoader loader = new RuleLoader();
+			IRuleLoader loader = new NewRuleLoader();
 			foreach (string ruleStr in ruleStrs)
 			{
 				Rule loadOneRule = loader.LoadOneRule(ruleStr);
