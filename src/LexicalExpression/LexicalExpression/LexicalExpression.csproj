@@ -52,7 +52,15 @@
     <Compile Include="LexWord.cs" />
     <Compile Include="Match.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Rule\IRuleLoader.cs" />
+    <Compile Include="Rule\LoadBasicItemContextState.cs" />
+    <Compile Include="Rule\LoadOptionItemContextState.cs" />
+    <Compile Include="Rule\LoadRuleItemContextState.cs" />
+    <Compile Include="Rule\LoadRuleLeftContextState.cs" />
+    <Compile Include="Rule\LoadSkipItemContextState.cs" />
     <Compile Include="Rule\Rule.cs" />
+    <Compile Include="Rule\RuleContext.cs" />
+    <Compile Include="Rule\RuleContextState.cs" />
     <Compile Include="Rule\RuleLeft\BasicRuleItem.cs" />
     <Compile Include="Rule\RuleLeft\IRuleItem.cs" />
     <Compile Include="Rule\RuleLeft\OptionalRuleItem.cs" />

@@ -67,7 +67,7 @@ namespace LexicalExpression
 
 		public Match GetNext()
 		{
-			return this._lexex.Run(this.Text, EndIndex + 1);
+			return this._lexex.Match(this.Text, EndIndex + 1);
 		}
 	}
 }

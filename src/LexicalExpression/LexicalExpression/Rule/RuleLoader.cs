@@ -6,7 +6,7 @@ namespace LexicalExpression
 	/// <summary>
 	///		规则加载器 （RuleLoader）
 	/// </summary>
-	internal class RuleLoader
+	internal class RuleLoader : IRuleLoader
 	{
 		private int _token;         // 解析规则时，单词对应的常量值
 		private int _lexval;        // 解析规则时，数字串对应的数值
